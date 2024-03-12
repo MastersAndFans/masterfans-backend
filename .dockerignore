@@ -84,3 +84,7 @@ node_modules/
 .gitignore
 Dockerfile
 *.md
+.gitkeep
+*.iml
+LICENSE
+.idea/

@@ -7,7 +7,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /bin/myapp ./cmd/myapp
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /bin/masterfansapp ./cmd/masterfansapp
 
 # Run
 FROM alpine:latest
@@ -18,9 +18,8 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /app
 
 # Copy binary from builder to run stage
-COPY --from=builder /bin/myapp /app/
+COPY --from=builder /bin/masterfansapp /app/masterfansapp
 
 EXPOSE 5000
 
-CMD ["./myapp"]
-
+CMD ["/app/masterfansapp"]
