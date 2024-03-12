@@ -88,3 +88,4 @@ Dockerfile
 *.iml
 LICENSE
 .idea/
+scripts/
