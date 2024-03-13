@@ -1,12 +1,22 @@
 package main
 
 import (
+	"github.com/MastersAndFans/masterfans-backend/internal/db"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"log"
 	"net/http"
 )
 
 func main() {
+	// Sample connection, do not leave it here, only connect to db where needed.
+	dbInstance, err := db.InitDB()
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	dbInstance.AutoMigrate()
+
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
@@ -23,4 +33,5 @@ func main() {
 	})
 
 	http.ListenAndServe(":5000", r)
+
 }
