@@ -7,19 +7,40 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15.6
+        env:
+          POSTGRES_USER: masterfansuser
+          POSTGRES_PASSWORD: masterfanspass
+          POSTGRES_DB: masterfansdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.22.1'
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22.1'
 
-    - name: Build
-      run: go build -v ./...
+      - name: Build
+        run: go build -v ./...
 
-    - name: Test
-      run: go test -v ./...
+      - name: Test
+        run: go test -v ./...
+        env:
+          DB_HOST: localhost
+          DB_USER: masterfansuser
+          DB_PASS: masterfanspass
+          DB_NAME: masterfansdb
+          DB_PORT: 5432
