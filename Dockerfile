@@ -9,8 +9,8 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /bin/masterfansapp ./cmd/masterfansapp
 
-# Run
-FROM alpine:latest
+# Production
+FROM alpine:latest AS production
 
 # CA certificates for HTTPS requests
 RUN apk --no-cache add ca-certificates
