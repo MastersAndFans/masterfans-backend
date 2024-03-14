@@ -1,32 +1,29 @@
 package utils
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 func TestHashPassword(t *testing.T) {
 	password := "test!pass@word123."
 	hashedPassword, err := HashPassword(password)
-	if err != nil {
-		t.Errorf("Hashing the password failed: %v", err)
-	}
 
-	if hashedPassword == password {
-		t.Errorf("Hashsd password is the same as the original password.")
-	}
+	assert.NoError(t, err, "Hashing the password should not produce an error")
+
+	assert.NotEqual(t, password, hashedPassword, "Hashed password should not be the same as the original password")
 }
 
 func TestCheckPassword(t *testing.T) {
 	password := "test!pass@word123."
 	wrongPassword := "wrongPASSword111"
+
 	hashedPassword, err := HashPassword(password)
-	if err != nil {
-		t.Errorf("Hashing the password failed: %v", err)
-	}
 
-	if !CheckPassword(hashedPassword, password) {
-		t.Errorf("Password checking failed for the correct password")
-	}
+	assert.NoError(t, err, "Hashing the password should not produce an error")
 
-	if CheckPassword(hashedPassword, wrongPassword) {
-		t.Errorf("Password checking succeeded for the incorrect password.")
-	}
+	assert.True(t, CheckPassword(hashedPassword, password), "Password checking should succeed for the correct password")
+
+	assert.False(t, CheckPassword(hashedPassword, wrongPassword), "Password checking should fail for the incorrect password")
 }

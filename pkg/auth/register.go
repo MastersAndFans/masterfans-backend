@@ -69,7 +69,7 @@ func (h *AuthHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	birthDate, err := time.Parse("2012-11-15", req.BirthDate)
+	birthDate, err := time.Parse("2006-01-02", req.BirthDate)
 	if err != nil {
 		http.Error(w, "Invalid birth date format", http.StatusBadRequest)
 		return
