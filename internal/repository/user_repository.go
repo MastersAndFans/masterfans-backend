@@ -22,3 +22,9 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*models
 	}
 	return &user, nil
 }
+
+func (r *UserRepository) CreateUser(ctx context.Context, user *models.User) error {
+	userRepo := NewRepository[models.User](r.db)
+
+	return userRepo.Create(ctx, user)
+}

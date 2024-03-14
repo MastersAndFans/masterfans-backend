@@ -29,6 +29,9 @@ func main() {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Welcome to MasterFans!"))
 	})
+
+	r.Post("/api/register", authHandler.RegisterHandler)
+
 	r.Post("/api/login", authHandler.LoginHandler)
 
 	// Protected routes
