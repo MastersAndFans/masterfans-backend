@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/MastersAndFans/masterfans-backend/internal/db"
+	"github.com/MastersAndFans/masterfans-backend/pkg/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log"
@@ -15,7 +16,7 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	dbInstance.AutoMigrate()
+	dbInstance.AutoMigrate(models.User{})
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
