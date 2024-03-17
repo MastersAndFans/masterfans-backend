@@ -52,11 +52,6 @@ func (h *AuthHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Password != req.RepeatPass {
-		http.Error(w, "Passwords do not match", http.StatusBadRequest)
-		return
-	}
-
 	_, err := h.UserRepo.FindByEmail(context.Background(), req.Email)
 	if err == nil {
 		http.Error(w, "User with this email address already exists", http.StatusBadRequest)
