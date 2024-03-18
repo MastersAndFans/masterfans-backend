@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -12,8 +10,6 @@ import (
 	"github.com/MastersAndFans/masterfans-backend/pkg/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"encoding/json"
-	"strconv"
 )
 
 func main() {
@@ -27,6 +23,7 @@ func main() {
 	userRepo := repository.NewUserRepository(dbInstance)
 
 	authHandler := auth.NewAuthHandler(userRepo)
+	userHandler := models.NewUserHandler(userRepo)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -35,41 +32,9 @@ func main() {
 		w.Write([]byte("Welcome to MasterFans!"))
 	})
 
-	// get by id
-	r.Get("/api/user/{id}", func(w http.ResponseWriter, r *http.Request) {
-		id_string := chi.URLParam(r, "id")
+	r.Get("/api/user/{id}", userHandler.GetUserById)
 
-		// convert id to int64
-		id, err := strconv.ParseInt(id_string, 10, 64)
-		if err != nil {
-			http.Error(w, "ID must contain only digits", http.StatusBadRequest)
-			return
-		}
-
-		user, err := userRepo.FindById(context.Background(), id)
-
-		if err != nil {
-			http.Error(w, fmt.Sprintf("User with ID %d not found", id), http.StatusBadRequest)
-			return
-		}
-
-		user_json, err := json.Marshal(user)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK);
-		w.Write(user_json)
-	})
-
-	// list 
-	// TODO
-	r.Get("/api/user", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("list")
-		w.WriteHeader(http.StatusOK);
-	})
+	r.Get("/api/user", userHandler.ListUsers)
 
 	r.Post("/api/register", authHandler.RegisterHandler)
 
