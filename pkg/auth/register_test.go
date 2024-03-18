@@ -31,11 +31,12 @@ func TestRegisterHandler(t *testing.T) {
 		prepare        func()
 		input          auth.RegisterRequest
 		expectedStatus int
+		expectedBody   map[string]string
 	}{
 		{
 			name: "success",
 			prepare: func() {
-				userRepoMock.On("FindByEmail", mock.Anything, "test@example.com").Return(nil, errors.New("user not found")).Once()
+				userRepoMock.On("FindByEmail", mock.Anything, "test@example.com").Return(nil, errors.New("Not found!")).Once()
 				userRepoMock.On("CreateUser", mock.Anything, mock.AnythingOfType("*models.User")).Return(nil).Once()
 			},
 			input: auth.RegisterRequest{
@@ -48,7 +49,10 @@ func TestRegisterHandler(t *testing.T) {
 				PhoneNumber: "123456789",
 				IsMaster:    false,
 			},
-			expectedStatus: http.StatusCreated,
+			expectedStatus: http.StatusOK,
+			expectedBody: map[string]string{
+				"message": "User created successfully",
+			},
 		},
 	}
 
@@ -64,6 +68,13 @@ func TestRegisterHandler(t *testing.T) {
 			r.ServeHTTP(rr, request)
 
 			assert.Equal(t, tc.expectedStatus, rr.Code)
+
+			var responseBody map[string]string
+			err := json.Unmarshal(rr.Body.Bytes(), &responseBody)
+			assert.NoError(t, err)
+			for key, expectedValue := range tc.expectedBody {
+				assert.Equal(t, expectedValue, responseBody[key], "Expected JSON response does not match for key: %s", key)
+			}
 
 			userRepoMock.AssertExpectations(t)
 		})
