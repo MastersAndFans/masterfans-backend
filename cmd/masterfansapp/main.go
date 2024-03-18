@@ -1,14 +1,16 @@
 package main
 
 import (
+	"github.com/MastersAndFans/masterfans-backend/pkg/handlers"
+	"log"
+	"net/http"
+
 	"github.com/MastersAndFans/masterfans-backend/internal/db"
 	"github.com/MastersAndFans/masterfans-backend/internal/repository"
 	"github.com/MastersAndFans/masterfans-backend/pkg/auth"
 	"github.com/MastersAndFans/masterfans-backend/pkg/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"log"
-	"net/http"
 )
 
 func main() {
@@ -22,6 +24,7 @@ func main() {
 	userRepo := repository.NewUserRepository(dbInstance)
 
 	authHandler := auth.NewAuthHandler(userRepo)
+	userHandler := handlers.NewUserHandler(userRepo)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -29,6 +32,10 @@ func main() {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Welcome to MasterFans!"))
 	})
+
+	r.Get("/api/user/{id}", userHandler.GetUserById)
+
+	r.Get("/api/user", userHandler.ListUsers)
 
 	r.Post("/api/register", authHandler.RegisterHandler)
 
