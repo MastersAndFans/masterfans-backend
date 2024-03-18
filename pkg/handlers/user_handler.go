@@ -19,43 +19,51 @@ func NewUserHandler(userRepo repository.IUserRepository) *UserHandler {
 }
 
 func (handler *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
-	id_string := chi.URLParam(r, "id")
-
-	// convert id to int64
-	id, err := strconv.ParseInt(id_string, 10, 64)
-	if err != nil {
-		http.Error(w, "ID must contain only digits", http.StatusBadRequest)
-		return
-	}
-
-	user, err := handler.UserRepo.FindById(context.Background(), id)
-
-	if err != nil {
-		http.Error(w, fmt.Sprintf("User with ID %d not found", id), http.StatusBadRequest)
-		return
-	}
-
-	user_json, err := json.Marshal(user)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(user_json)
-}
-
-func (handler *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
 	users, err := handler.UserRepo.List(context.Background())
 
 	users_json, err := json.Marshal(users)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Failed to create JSON"})
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(users_json)
+}
+
+func (handler *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
+	id_string := chi.URLParam(r, "id")
+
+	// convert id to int64
+	id, err := strconv.ParseInt(id_string, 10, 64)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"message": "ID must contain only digits"})
+		return
+	}
+
+	user, err := handler.UserRepo.FindById(context.Background(), id)
+
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"message": fmt.Sprintf("User with ID %d not found", id)})
+		return
+	}
+
+	user_json, err := json.Marshal(user)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Failed to create JSON"})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(user_json)
 }
