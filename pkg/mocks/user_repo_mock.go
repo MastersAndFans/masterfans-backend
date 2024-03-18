@@ -10,8 +10,8 @@ type UserRepoMock struct {
 	mock.Mock
 }
 
-func (m *UserRepoMock) List(ctx context.Context, user *models.User) error {
-	return nil
+func (m *UserRepoMock) List(ctx context.Context) ([]models.User, error) {
+	return nil, nil
 }
 
 func (m *UserRepoMock) FindByEmail(ctx context.Context, email string) (*models.User, error) {
@@ -22,8 +22,8 @@ func (m *UserRepoMock) FindByEmail(ctx context.Context, email string) (*models.U
 	return nil, args.Error(1)
 }
 
-func (m *UserRepoMock) FindById(ctx context.Context, user *models.User) error {
-	return nil
+func (m *UserRepoMock) FindById(ctx context.Context, id int64) (*models.User, error) {
+	return nil, nil
 }
 
 func (m *UserRepoMock) CreateUser(ctx context.Context, user *models.User) error {
