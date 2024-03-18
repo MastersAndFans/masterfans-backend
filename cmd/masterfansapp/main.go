@@ -37,9 +37,7 @@ func main() {
 	// Protected routes
 	r.Group(func(r chi.Router) {
 		r.Use(auth.JWTAuthMiddleware)
-		r.Get("/api/hello", func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("Hello, MasterFans!"))
-		})
+		r.Post("/api/logout", authHandler.LogoutHandler)
 	})
 
 	log.Fatal(http.ListenAndServe(":5000", r))
