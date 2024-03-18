@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/MastersAndFans/masterfans-backend/pkg/handlers"
 	"log"
 	"net/http"
 
@@ -23,7 +24,7 @@ func main() {
 	userRepo := repository.NewUserRepository(dbInstance)
 
 	authHandler := auth.NewAuthHandler(userRepo)
-	userHandler := models.NewUserHandler(userRepo)
+	userHandler := handlers.NewUserHandler(userRepo)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)

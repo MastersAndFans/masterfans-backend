@@ -1,12 +1,12 @@
-package models
+package handlers
 
 import (
-	"github.com/MastersAndFans/masterfans-backend/internal/repository"
-	"net/http"
 	"context"
-	"fmt"
-	"github.com/go-chi/chi/v5"
 	"encoding/json"
+	"fmt"
+	"github.com/MastersAndFans/masterfans-backend/internal/repository"
+	"github.com/go-chi/chi/v5"
+	"net/http"
 	"strconv"
 )
 
@@ -42,7 +42,7 @@ func (handler *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK);
+	w.WriteHeader(http.StatusOK)
 	w.Write(user_json)
 }
 
@@ -56,6 +56,6 @@ func (handler *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) 
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK);
+	w.WriteHeader(http.StatusOK)
 	w.Write(users_json)
 }
