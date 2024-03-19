@@ -40,12 +40,12 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.UserRepo.FindByEmail(context.Background(), req.Email)
 	if err != nil {
-		helpers.ErrorHelper(w, http.StatusBadRequest, "Invalid credentials")
+		helpers.ErrorHelper(w, http.StatusUnauthorized, "Invalid credentials")
 		return
 	}
 
 	if !utils.CheckPassword(user.Password, req.Password) {
-		helpers.ErrorHelper(w, http.StatusBadRequest, "Invalid credentials")
+		helpers.ErrorHelper(w, http.StatusUnauthorized, "Invalid credentials")
 		return
 	}
 
