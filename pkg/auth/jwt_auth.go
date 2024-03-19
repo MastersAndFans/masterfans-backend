@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/MastersAndFans/masterfans-backend/pkg/helpers"
 	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"os"
@@ -11,7 +12,7 @@ func JWTAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("auth_token")
 		if err != nil {
-			http.Error(w, "Unauthorized - No token provided", http.StatusUnauthorized)
+			helpers.ErrorHelper(w, http.StatusUnauthorized, "Unauthorized - No token provided")
 			return
 		}
 
@@ -32,7 +33,7 @@ func JWTAuthMiddleware(next http.Handler) http.Handler {
 
 		claims, ok := token.Claims.(*CustomClaims)
 		if !ok || !token.Valid {
-			http.Error(w, "Unauthorized - Invalid token", http.StatusUnauthorized)
+			helpers.ErrorHelper(w, http.StatusUnauthorized, "Unauthorized - Invalid token")
 			return
 		}
 

@@ -14,9 +14,27 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
+func (r *UserRepository) List(ctx context.Context) ([]models.User, error) {
+	var users []models.User
+	err := r.db.Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
 func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*models.User, error) {
 	var user models.User
 	err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *UserRepository) FindById(ctx context.Context, id int64) (*models.User, error) {
+	var user models.User
+	err := r.db.WithContext(ctx).Where("id = ?", id).First(&user).Error
 	if err != nil {
 		return nil, err
 	}
