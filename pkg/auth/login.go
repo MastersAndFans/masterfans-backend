@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/MastersAndFans/masterfans-backend/internal/repository"
+	"github.com/MastersAndFans/masterfans-backend/pkg/helpers"
 	"github.com/MastersAndFans/masterfans-backend/pkg/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"log"
@@ -33,24 +34,18 @@ func NewAuthHandler(userRepo repository.IUserRepository) *AuthHandler {
 func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var req LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Invalid request"})
+		helpers.ErrorHelper(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	user, err := h.UserRepo.FindByEmail(context.Background(), req.Email)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Invalid credentials"})
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Invalid credentials")
 		return
 	}
 
 	if !utils.CheckPassword(user.Password, req.Password) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Invalid credentials"})
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Invalid credentials")
 		return
 	}
 
@@ -72,9 +67,7 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	tokenString, err := token.SignedString([]byte(secretKey))
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Failed to generate token"})
+		helpers.ErrorHelper(w, http.StatusInternalServerError, "Failed to generate token")
 		return
 	}
 
@@ -97,7 +90,7 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		helpers.ErrorHelper(w, http.StatusInternalServerError, "Failed to create JSON")
 	}
 
 }
