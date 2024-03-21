@@ -13,4 +13,5 @@ type User struct {
 	IsMaster    bool      `gorm:"not null"           json:"is_master"`
 	CreatedAt   time.Time `                          json:"created_at"`
 	UpdatedAt   time.Time `                          json:"updated_at"`
+	DeletedAt   time.Time `                          json:"deleted_at"`
 }
