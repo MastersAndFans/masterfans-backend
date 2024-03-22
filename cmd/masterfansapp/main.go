@@ -4,6 +4,8 @@ import (
 	"github.com/MastersAndFans/masterfans-backend/pkg/handlers"
 	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/MastersAndFans/masterfans-backend/internal/db"
 	"github.com/MastersAndFans/masterfans-backend/internal/repository"
@@ -22,8 +24,12 @@ func main() {
 	dbInstance.AutoMigrate(&models.User{})
 
 	userRepo := repository.NewUserRepository(dbInstance)
-
-	authHandler := auth.NewAuthHandler(userRepo)
+	secretKey := os.Getenv("JWT_SECRET_KEY")
+	if secretKey == "" {
+		log.Fatalf("JWT_SECRET_KEY env variable is not set!")
+	}
+	authHandlerConfig := auth.AuthHandlerConfig{TokenDuration: 24 * time.Hour, JWTSecretKey: secretKey, UserRepo: userRepo}
+	authHandler := auth.NewAuthHandler(authHandlerConfig)
 	userHandler := handlers.NewUserHandler(userRepo)
 
 	r := chi.NewRouter()
