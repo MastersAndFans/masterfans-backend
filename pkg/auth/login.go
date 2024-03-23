@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/MastersAndFans/masterfans-backend/internal/repository"
 	"github.com/MastersAndFans/masterfans-backend/pkg/helpers"
@@ -42,7 +41,7 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.config.UserRepo.FindByEmail(context.Background(), req.Email)
+	user, err := h.config.UserRepo.FindByEmail(r.Context(), req.Email)
 	if err != nil {
 		helpers.ErrorHelper(w, http.StatusUnauthorized, "Invalid credentials")
 		return
