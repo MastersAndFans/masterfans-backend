@@ -1,6 +1,5 @@
 package auth_test
 
-/*
 import (
 	"bytes"
 	"encoding/json"
@@ -22,7 +21,8 @@ func TestRegisterHandler(t *testing.T) {
 	birthDateString := mockedTime.Format("2006-01-02")
 
 	userRepoMock := new(mocks.UserRepoMock)
-	authHandler := auth.NewAuthHandler(userRepoMock)
+	authHandlerConfig := auth.AuthHandlerConfig{UserRepo: userRepoMock, JWTSecretKey: "", TokenDuration: 0}
+	authHandler := auth.NewAuthHandler(authHandlerConfig)
 
 	r := chi.NewRouter()
 	r.Post("/api/register", authHandler.RegisterHandler)
@@ -81,4 +81,3 @@ func TestRegisterHandler(t *testing.T) {
 		})
 	}
 }
-*/
