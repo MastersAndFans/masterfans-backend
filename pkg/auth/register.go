@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/MastersAndFans/masterfans-backend/pkg/helpers"
 	"github.com/MastersAndFans/masterfans-backend/pkg/models"
@@ -53,7 +52,7 @@ func (h *AuthHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := h.UserRepo.FindByEmail(context.Background(), req.Email)
+	_, err := h.config.UserRepo.FindByEmail(r.Context(), req.Email)
 	if err == nil {
 		helpers.ErrorHelper(w, http.StatusBadRequest, "User with this email address already exists")
 		return
@@ -81,7 +80,7 @@ func (h *AuthHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		IsMaster:    req.IsMaster,
 	}
 
-	err = h.UserRepo.CreateUser(context.Background(), &user)
+	err = h.config.UserRepo.CreateUser(r.Context(), &user)
 	if err != nil {
 		helpers.ErrorHelper(w, http.StatusInternalServerError, "Failed to create user")
 		return
