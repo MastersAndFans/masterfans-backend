@@ -21,7 +21,12 @@ func TestLoginHandler(t *testing.T) {
 	defer os.Unsetenv("JWT_SECRET_KEY")
 
 	userRepoMock := new(mocks.UserRepoMock)
-	authHandler := NewAuthHandler(userRepoMock)
+	authHandlerConfig := AuthHandlerConfig{
+		UserRepo:      userRepoMock,
+		JWTSecretKey:  "test",
+		TokenDuration: 24,
+	}
+	authHandler := NewAuthHandler(authHandlerConfig)
 
 	hashedPassword, err := utils.HashPassword("password")
 	assert.NoError(t, err, "Hashing mock user password should not fail")

@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"context"
 	"encoding/json"
+	"github.com/MastersAndFans/masterfans-backend/pkg/helpers"
 	"github.com/MastersAndFans/masterfans-backend/pkg/models"
 	"github.com/MastersAndFans/masterfans-backend/pkg/utils"
 	"net/http"
@@ -23,66 +23,50 @@ type RegisterRequest struct {
 func (h *AuthHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var req RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		helpers.ErrorHelper(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if req.Email == "" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Email is required"})
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Email is required")
 		return
 	}
 
 	if req.Password == "" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Password is required"})
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Password is required")
 		return
 	}
 
 	if req.Name == "" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Name is required"})
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Name is required")
 		return
 	}
 
 	if req.Surname == "" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Surname is required"})
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Surname is required")
 		return
 	}
 
 	if req.BirthDate == "" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Birth date is required"})
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Birth date is required")
 		return
 	}
 
-	_, err := h.UserRepo.FindByEmail(context.Background(), req.Email)
+	_, err := h.config.UserRepo.FindByEmail(r.Context(), req.Email)
 	if err == nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "User with this email address already exists"})
+		helpers.ErrorHelper(w, http.StatusBadRequest, "User with this email address already exists")
 		return
 	}
 
 	hashedPassword, err := utils.HashPassword(req.Password)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Failed to hash password"})
+		helpers.ErrorHelper(w, http.StatusInternalServerError, "Failed to hash password")
 		return
 	}
 
 	birthDate, err := time.Parse("2006-01-02", req.BirthDate)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Invalid birth date format"})
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Invalid birth date format")
 		return
 	}
 
@@ -96,11 +80,9 @@ func (h *AuthHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		IsMaster:    req.IsMaster,
 	}
 
-	err = h.UserRepo.CreateUser(context.Background(), &user)
+	err = h.config.UserRepo.CreateUser(r.Context(), &user)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"message": "Failed to create user"})
+		helpers.ErrorHelper(w, http.StatusInternalServerError, "Failed to create user")
 		return
 	}
 
@@ -113,6 +95,6 @@ func (h *AuthHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		helpers.ErrorHelper(w, http.StatusInternalServerError, "Failed to create JSON")
 	}
 }
