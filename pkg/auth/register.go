@@ -6,6 +6,7 @@ import (
 	"github.com/MastersAndFans/masterfans-backend/pkg/models"
 	"github.com/MastersAndFans/masterfans-backend/pkg/utils"
 	"net/http"
+	"regexp"
 	"time"
 )
 
@@ -27,28 +28,28 @@ func (h *AuthHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.Email == "" {
-		helpers.ErrorHelper(w, http.StatusBadRequest, "Email is required")
+	if !(isValidEmail(req.Email)) {
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Invalid email address")
 		return
 	}
 
-	if req.Password == "" {
-		helpers.ErrorHelper(w, http.StatusBadRequest, "Password is required")
+	if len(req.Password) < 8 || !isPasswordStrong(req.Password) {
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Password is too weak")
 		return
 	}
 
-	if req.Name == "" {
-		helpers.ErrorHelper(w, http.StatusBadRequest, "Name is required")
+	if req.Password != req.RepeatPass {
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Passwords do not match")
 		return
 	}
 
-	if req.Surname == "" {
-		helpers.ErrorHelper(w, http.StatusBadRequest, "Surname is required")
+	if !isValidName(req.Name) || !isValidName(req.Surname) {
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Invalid name or surname")
 		return
 	}
 
-	if req.BirthDate == "" {
-		helpers.ErrorHelper(w, http.StatusBadRequest, "Birth date is required")
+	if !isValidBirthDate(req.BirthDate) {
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Invalid birth date")
 		return
 	}
 
@@ -67,6 +68,11 @@ func (h *AuthHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	birthDate, err := time.Parse("2006-01-02", req.BirthDate)
 	if err != nil {
 		helpers.ErrorHelper(w, http.StatusBadRequest, "Invalid birth date format")
+		return
+	}
+
+	if !isValidPhoneNumber(req.PhoneNumber) {
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Invalid phone number")
 		return
 	}
 
@@ -97,4 +103,45 @@ func (h *AuthHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		helpers.ErrorHelper(w, http.StatusInternalServerError, "Failed to create JSON")
 	}
+}
+
+func isValidPhoneNumber(number string) bool {
+	var phoneNumberRegex = regexp.MustCompile(`^\+370[0-9]{8,8}$`)
+	return phoneNumberRegex.MatchString(number)
+}
+
+func isValidBirthDate(dateStr string) bool {
+	date, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return false
+	}
+
+	thirteenYearsAgo := time.Now().AddDate(-13, 0, 0)
+	return date.After(thirteenYearsAgo)
+}
+
+func isValidName(name string) bool {
+	var nameRegex = regexp.MustCompile(`^[a-zA-ZąčęėįšųūžĄČĘĖĮŠŲŪŽ]{2,50}$`)
+	return nameRegex.MatchString(name)
+}
+
+func isPasswordStrong(password string) bool {
+	var (
+		minLenRegex      = regexp.MustCompile(`.{8,}`)
+		upperCaseRegex   = regexp.MustCompile(`[A-Z]`)
+		lowerCaseRegex   = regexp.MustCompile(`[a-z]`)
+		numberRegex      = regexp.MustCompile(`[0-9]`)
+		specialCharRegex = regexp.MustCompile(`[!@#$%^&*(),.?":{}|<>]`)
+	)
+
+	return minLenRegex.MatchString(password) &&
+		upperCaseRegex.MatchString(password) &&
+		lowerCaseRegex.MatchString(password) &&
+		numberRegex.MatchString(password) &&
+		specialCharRegex.MatchString(password)
+}
+
+func isValidEmail(email string) bool {
+	var emailRegex = regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+	return emailRegex.MatchString(email)
 }
