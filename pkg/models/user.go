@@ -14,4 +14,5 @@ type User struct {
 	CreatedAt   time.Time `                          json:"created_at"`
 	UpdatedAt   time.Time `                          json:"updated_at"`
 	DeletedAt   time.Time `                          json:"deleted_at"`
+	Auctions    []*Auction `gorm:"Many2Many:auction_participants" json:"participating_in"`
 }

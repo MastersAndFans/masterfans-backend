@@ -8,5 +8,7 @@ import (
 type IAuctionRepository interface {
 	List(ctx context.Context) ([]models.Auction, error)
 	FindById(ctx context.Context, id int64) (*models.Auction, error)
-	CreateAuction(ctx context.Context, auction *models.Auction) error
+	Create(ctx context.Context, auction *models.Auction) error
+	Delete(ctx context.Context, id int64) error
+	Update(ctx context.Context, auction *models.Auction) (error)
 }

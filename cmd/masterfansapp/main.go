@@ -20,7 +20,7 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	err = dbInstance.AutoMigrate(&models.User{}, &models.Review{}, &models.Schedule{}, &models.Service{}, &models.TimeRange{})
+	err = dbInstance.AutoMigrate(&models.User{}, &models.Review{}, &models.Schedule{}, &models.Service{}, &models.TimeRange{}, &models.Auction{})
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
@@ -32,7 +32,7 @@ func main() {
 	authHandlerConfig := auth.AuthHandlerConfig{UserRepo: userRepo, JWTSecretKey: secretKey, TokenDuration: 24 * time.Hour}
 	authHandler := auth.NewAuthHandler(authHandlerConfig)
 	userHandler := handlers.NewUserHandler(userRepo)
-	auctionHandler := handlers.NewAuctionHandler(auctionRepo)
+	auctionHandler := handlers.NewAuctionHandler(auctionRepo, userRepo)
 
 	r := setupRouter(authHandler, userHandler, auctionHandler)
 
@@ -58,6 +58,9 @@ func setupRouter(authHandler *auth.AuthHandler, userHandler *handlers.UserHandle
 	r.Route("/api/auction", func(r chi.Router) {
 		r.Get("/{id}", auctionHandler.GetAuctionById)
 		r.Get("/", auctionHandler.ListAuctions)
+		r.Post("/", auctionHandler.CreateAuction)
+		r.Post("/update-bidder", auctionHandler.UpdateBidder)
+		r.Delete("/{id}", auctionHandler.DeleteAuction)
 	})
 
 	// Authentication routes

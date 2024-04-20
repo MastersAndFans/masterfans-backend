@@ -22,6 +22,7 @@ func InitDB() (*gorm.DB, error) {
 	//db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
+		FullSaveAssociations: true,
 	})
 
 	if err != nil {

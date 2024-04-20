@@ -16,7 +16,7 @@ func NewAuctionRepository(db *gorm.DB) *AuctionRepository {
 
 func (r *AuctionRepository) List(ctx context.Context) ([]models.Auction, error) {
 	var auctions []models.Auction
-	err := r.db.Find(&auctions).Error
+	err := r.db.Preload("Proposer").Preload("Participants").Find(&auctions).Error
 	if err != nil {
 		return nil, err
 	}
@@ -25,15 +25,31 @@ func (r *AuctionRepository) List(ctx context.Context) ([]models.Auction, error) 
 
 func (r *AuctionRepository) FindById(ctx context.Context, id int64) (*models.Auction, error) {
 	var auction models.Auction
-	err := r.db.WithContext(ctx).Where("id = ?", id).First(&auction).Error
+	err := r.db.Preload("Proposer").Preload("Participants").WithContext(ctx).Where("id = ?", id).First(&auction).Error
 	if err != nil {
 		return nil, err
 	}
+
 	return &auction, nil
 }
 
-func (r *AuctionRepository) CreateAuction(ctx context.Context, auction *models.Auction) error {
+func (r *AuctionRepository) Create(ctx context.Context, auction *models.Auction) error {
 	auctionRepo := NewRepository[models.Auction](r.db)
 
 	return auctionRepo.Create(ctx, auction)
+}
+
+func (r *AuctionRepository) Delete(ctx context.Context, id int64) error {
+	auction, err := r.FindById(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	auctionRepo := NewRepository[models.Auction](r.db)
+	return auctionRepo.Delete(ctx, auction)
+}
+
+func (r *AuctionRepository) Update(ctx context.Context, auction *models.Auction) (error) {
+	err := r.db.Save(&auction).Error
+	return err
 }
