@@ -92,3 +92,29 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func (h *AuthHandler) GetCurrentUser(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("auth_token")
+	if err != nil {
+		helpers.ErrorHelper(w, http.StatusBadRequest, "User is not logged in")
+		return
+	}
+
+	token, err := jwt.ParseWithClaims(cookie.Value, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(h.config.JWTSecretKey), nil
+	})
+	if err != nil {
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Token is invalid")
+		return
+	}
+
+	claims := token.Claims.(*CustomClaims)
+
+	user, err := h.config.UserRepo.FindById(r.Context(), int64(claims.UserID))
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(user); err != nil {
+		helpers.ErrorHelper(w, http.StatusInternalServerError, "Failed to create JSON")
+	}
+}
