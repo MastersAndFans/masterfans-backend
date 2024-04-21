@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type AuctionHandler struct {
@@ -22,11 +23,24 @@ func NewAuctionHandler(auctionRepo repository.IAuctionRepository, userRepo repos
 }
 
 
+type CreateAuctionPayload struct {
+	ProposerId    uint   `json:"proposer_id"`
+	StartingPrice uint   `json:"starting_price"`
+	StartDate     string `json:"start_date"`
+	EndDate       string `json:"end_date"`
+	Active        bool   `json:"active"`
+	Title         string `json:"title"`
+	Description   string `json:"description"`
+	City          string `json:"city"`
+	Category      uint   `json:"category"`
+}
+
 type UpdateBidderPayload struct {
 	Auction_ID int64
-	User_ID int64
-	Bid int64
+	User_ID    int64
+	Bid        int64
 }
+
 
 func (handler *AuctionHandler) ListAuctions(w http.ResponseWriter, r *http.Request) {
 	auctions, err := handler.AuctionRepo.List(context.Background())
@@ -79,18 +93,43 @@ func (handler *AuctionHandler) GetAuctionById(w http.ResponseWriter, r *http.Req
 }
 
 func (handler *AuctionHandler) CreateAuction(w http.ResponseWriter, r *http.Request) {
-	var auction models.Auction
-	if err := json.NewDecoder(r.Body).Decode(&auction); err != nil {
+	var payload CreateAuctionPayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 		helpers.ErrorHelper(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	if auction.StartDate.After(auction.EndDate) {
+	start_date, err := time.Parse("2006-01-02", payload.StartDate)
+	if err != nil {
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Start date does not match yyyy-mm-dd format")
+		return
+	}
+
+	end_date, err := time.Parse("2006-01-02", payload.EndDate)
+	if err != nil {
+		helpers.ErrorHelper(w, http.StatusBadRequest, "End date does not match yyyy-mm-dd format")
+		return
+	}
+
+	if start_date.After(end_date) {
 		helpers.ErrorHelper(w, http.StatusBadRequest, "Start date cannot be after end date")
 		return
 	}
 
-	err := handler.AuctionRepo.Create(r.Context(), &auction)
+
+	auction := models.Auction{
+		ProposerID: payload.ProposerId,
+		Active: payload.Active,
+		StartingPrice: int64(payload.StartingPrice),
+		StartDate: start_date,
+		EndDate: end_date,
+		Title: payload.Title,
+		Description: payload.Description,
+		Category: models.AuctionCategory(payload.Category),
+		City: payload.City,
+	}
+
+	err = handler.AuctionRepo.Create(r.Context(), &auction)
 	if err != nil {
 		helpers.ErrorHelper(w, http.StatusInternalServerError, "Failed to create auction")
 		return
