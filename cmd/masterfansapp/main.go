@@ -20,25 +20,27 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	err = dbInstance.AutoMigrate(&models.User{}, &models.Review{}, &models.Schedule{}, &models.Service{}, &models.TimeRange{})
+	err = dbInstance.AutoMigrate(&models.User{}, &models.Review{}, &models.Schedule{}, &models.Service{}, &models.TimeRange{}, &models.Auction{})
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
 	userRepo := repository.NewUserRepository(dbInstance)
+	auctionRepo := repository.NewAuctionRepository(dbInstance)
 
 	secretKey := os.Getenv("JWT_SECRET_KEY")
 	authHandlerConfig := auth.AuthHandlerConfig{UserRepo: userRepo, JWTSecretKey: secretKey, TokenDuration: 24 * time.Hour}
 	authHandler := auth.NewAuthHandler(authHandlerConfig)
 	userHandler := handlers.NewUserHandler(userRepo)
+	auctionHandler := handlers.NewAuctionHandler(auctionRepo, userRepo)
 
-	r := setupRouter(authHandler, userHandler)
+	r := setupRouter(authHandler, userHandler, auctionHandler)
 
 	log.Println("Starting server on :5000...")
 	log.Fatal(http.ListenAndServe(":5000", r))
 }
 
-func setupRouter(authHandler *auth.AuthHandler, userHandler *handlers.UserHandler) *chi.Mux {
+func setupRouter(authHandler *auth.AuthHandler, userHandler *handlers.UserHandler, auctionHandler *handlers.AuctionHandler) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
@@ -51,6 +53,14 @@ func setupRouter(authHandler *auth.AuthHandler, userHandler *handlers.UserHandle
 	r.Route("/api/user", func(r chi.Router) {
 		r.Get("/{id}", userHandler.GetUserById)
 		r.Get("/", userHandler.ListUsers)
+	})
+
+	r.Route("/api/auction", func(r chi.Router) {
+		r.Get("/{id}", auctionHandler.GetAuctionById)
+		r.Get("/", auctionHandler.ListAuctions)
+		r.Post("/", auctionHandler.CreateAuction)
+		r.Post("/update-bidder", auctionHandler.UpdateBidder)
+		r.Delete("/{id}", auctionHandler.DeleteAuction)
 	})
 
 	// Authentication routes
