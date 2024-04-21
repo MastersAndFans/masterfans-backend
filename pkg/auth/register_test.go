@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/MastersAndFans/masterfans-backend/pkg/auth"
 	"github.com/MastersAndFans/masterfans-backend/pkg/mocks"
@@ -17,9 +16,6 @@ import (
 )
 
 func TestRegisterHandler(t *testing.T) {
-	mockedTime, _ := time.Parse("2006-01-02", "1990-01-01")
-	birthDateString := mockedTime.Format("2006-01-02")
-
 	userRepoMock := new(mocks.UserRepoMock)
 	authHandlerConfig := auth.AuthHandlerConfig{UserRepo: userRepoMock, JWTSecretKey: "", TokenDuration: 0}
 	authHandler := auth.NewAuthHandler(authHandlerConfig)
@@ -42,12 +38,12 @@ func TestRegisterHandler(t *testing.T) {
 			},
 			input: auth.RegisterRequest{
 				Email:       "test@example.com",
-				Password:    "password123",
-				RepeatPass:  "password123",
+				Password:    "password123A@",
+				RepeatPass:  "password123A@",
 				Name:        "John",
 				Surname:     "Doe",
-				BirthDate:   birthDateString,
-				PhoneNumber: "123456789",
+				BirthDate:   "2019-04-05",
+				PhoneNumber: "+37069536785",
 				IsMaster:    false,
 			},
 			expectedStatus: http.StatusOK,
