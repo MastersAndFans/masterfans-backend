@@ -15,13 +15,12 @@ import (
 
 type AuctionHandler struct {
 	AuctionRepo repository.IAuctionRepository
-	UserRepo repository.IUserRepository
+	UserRepo    repository.IUserRepository
 }
 
 func NewAuctionHandler(auctionRepo repository.IAuctionRepository, userRepo repository.IUserRepository) *AuctionHandler {
 	return &AuctionHandler{AuctionRepo: auctionRepo, UserRepo: userRepo}
 }
-
 
 type CreateAuctionPayload struct {
 	ProposerId    uint   `json:"proposer_id"`
@@ -40,7 +39,6 @@ type UpdateBidderPayload struct {
 	User_ID    int64
 	Bid        int64
 }
-
 
 func (handler *AuctionHandler) ListAuctions(w http.ResponseWriter, r *http.Request) {
 	auctions, err := handler.AuctionRepo.List(context.Background())
@@ -99,15 +97,16 @@ func (handler *AuctionHandler) CreateAuction(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	start_date, err := time.Parse("2006-01-02", payload.StartDate)
+	const date_layout = "2006-01-02 15:04:05"
+	start_date, err := time.Parse(date_layout, payload.StartDate)
 	if err != nil {
-		helpers.ErrorHelper(w, http.StatusBadRequest, "Start date does not match yyyy-mm-dd format")
+		helpers.ErrorHelper(w, http.StatusBadRequest, "Start date does not match yyyy-mm-dd hh:mm:ss format")
 		return
 	}
 
-	end_date, err := time.Parse("2006-01-02", payload.EndDate)
+	end_date, err := time.Parse(date_layout, payload.EndDate)
 	if err != nil {
-		helpers.ErrorHelper(w, http.StatusBadRequest, "End date does not match yyyy-mm-dd format")
+		helpers.ErrorHelper(w, http.StatusBadRequest, "End date does not match yyyy-mm-dd hh:mm:ss format")
 		return
 	}
 
@@ -116,17 +115,16 @@ func (handler *AuctionHandler) CreateAuction(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-
 	auction := models.Auction{
-		ProposerID: payload.ProposerId,
-		Active: payload.Active,
+		ProposerID:    payload.ProposerId,
+		Active:        payload.Active,
 		StartingPrice: int64(payload.StartingPrice),
-		StartDate: start_date,
-		EndDate: end_date,
-		Title: payload.Title,
-		Description: payload.Description,
-		Category: models.AuctionCategory(payload.Category),
-		City: payload.City,
+		StartDate:     start_date,
+		EndDate:       end_date,
+		Title:         payload.Title,
+		Description:   payload.Description,
+		Category:      models.AuctionCategory(payload.Category),
+		City:          payload.City,
 	}
 
 	err = handler.AuctionRepo.Create(r.Context(), &auction)
@@ -136,7 +134,7 @@ func (handler *AuctionHandler) CreateAuction(w http.ResponseWriter, r *http.Requ
 	}
 
 	response := map[string]string{
-		"message": "Auction created successfully",
+		"message":    "Auction created successfully",
 		"auction_id": fmt.Sprint(auction.ID),
 	}
 
@@ -173,7 +171,6 @@ func (handler *AuctionHandler) UpdateBidder(w http.ResponseWriter, r *http.Reque
 		helpers.ErrorHelper(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
 
 	auction.StartingPrice = request.Bid
 	auction.Participants = append(auction.Participants, user)
