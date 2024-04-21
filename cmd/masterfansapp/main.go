@@ -66,6 +66,7 @@ func setupRouter(authHandler *auth.AuthHandler, userHandler *handlers.UserHandle
 	// Authentication routes
 	r.Post("/api/register", authHandler.RegisterHandler)
 	r.Post("/api/login", authHandler.LoginHandler)
+	r.Get("/api/current-user", authHandler.GetCurrentUser)
 
 	// Protected routes
 	r.Group(func(r chi.Router) {
